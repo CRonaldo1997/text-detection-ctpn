@@ -1,0 +1,36 @@
+1)Set "USE_GPU_NMS " in the file ./ctpn/text.yml as "False"
+2)Set the "__C.USE_GPU_NMS" in the file ./lib/fast_rcnn/config.py as "False";
+3)Comment out the line "from lib.utils.gpu_nms import gpu_nms" in the file ./lib/fast_rcnn/nms_wrapper.py
+4)Use the following setup.py instead of the original one:
+  from Cython.Build import cythonize
+  import numpy as np
+  from distutils.core import setup
+  from distutils.extension import Extension
+  try:
+      numpy_include = np.get_include()
+  except AttributeError:
+      numpy_include = np.get_numpy_include()
+
+  ext_modules = [
+      Extension(
+          'bbox',
+          sources=['bbox.c'],
+          include_dirs = [numpy_include]
+      ),
+      Extension(
+          'cython_nms',
+          sources=['cython_nms.c'],
+      )
+  ]
+  setup(
+      ext_modules=ext_modules
+  )
+5)run:
+  export CFLAGS=-I/home/zhao181/ProGram1/anaconda2/lib/python2.7/site-packages/numpy/core/include
+  you should use your own numpy path
+6)run: python3 setup.py build
+7)uncomment any lines about 'import USE_GPU_NMS'
+8)pip3 install any package you need, if can't install by pip, install it from source code,such as:http://pyyaml.org/wiki/PyYAML for "no module named yaml"
+9)copy the following so file:
+  build/bbox.cpython-36m-darwin.so and build/cython_nms.cpython-36m-darwin.so file to utils
+10)cd xxx/text-detection-ctpn-master and execute: python ./ctpn/demo.py
